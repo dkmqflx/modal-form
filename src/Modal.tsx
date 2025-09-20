@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, type FormData } from "./model/schema";
@@ -12,6 +12,7 @@ type ModalProps = {
 export const Modal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const {
     register,
@@ -34,16 +35,19 @@ export const Modal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
     if (!dialog) return;
 
     document.body.style.overflow = isOpen ? "hidden" : "";
-    
+
     if (isOpen) {
       dialog.showModal();
       reset();
+      // 애니메이션 트리거
       requestAnimationFrame(() => {
+        setIsAnimating(true);
         title?.focus();
       });
       return;
     }
-    
+
+    setIsAnimating(false);
     dialog.close();
 
     return () => {
@@ -71,7 +75,11 @@ export const Modal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
   return (
     <dialog
       ref={dialogRef}
-      className="p-0 border-none rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] backdrop:bg-black/50 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      className={`p-0 border-none rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] backdrop:bg-black/50 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+        isAnimating
+          ? "animate-in fade-in zoom-in-95 duration-200"
+          : "opacity-0 scale-95"
+      }`}
       onCancel={handleCancel}
       onClick={handleBackdropClick}
       aria-modal="true"
@@ -99,7 +107,10 @@ export const Modal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
           </button>
         </header>
 
-        <div id="modal-description" className="px-6 pb-4 text-sm text-gray-600">
+        <div
+          id="modal-description"
+          className="px-6 mt-2 pb-4 text-sm text-gray-600"
+        >
           아래 양식을 작성하여 정보를 제출해주세요.
         </div>
 
